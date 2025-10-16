@@ -1,0 +1,176 @@
+/* ========================================================== */
+/* 1. Estilos Generales y Tipografía */
+/* ========================================================== */
+
+:root {
+    /* Paleta de colores */
+    --color-bg-principal: #121212; /* Negro muy oscuro */
+    --color-bg-secundario: #252525; /* Gris oscuro para secciones */
+    --color-texto-claro: #E0E0E0; /* Gris muy claro para texto */
+    --color-acento-rojo: #C0392B; /* Rojo intenso/sangre para acentos */
+    --color-detalle: #505050; /* Gris medio para bordes */
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Arial', sans-serif; 
+    background-color: var(--color-bg-principal);
+    color: var(--color-texto-claro);
+    line-height: 1.6;
+    padding: 20px;
+}
+
+/* Encabezados con un toque de acento */
+h1, h2, h3 {
+    font-family: 'Impact', 'Georgia', serif; 
+    color: var(--color-texto-claro);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+/* ========================================================== */
+/* 2. Header y Footer */
+/* ========================================================== */
+
+header {
+    background-color: var(--color-bg-secundario);
+    padding: 30px 20px;
+    text-align: center;
+    border-bottom: 3px solid var(--color-acento-rojo); 
+    margin-bottom: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+}
+
+header p {
+    color: var(--color-detalle);
+    font-style: italic;
+}
+
+footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+    border-top: 1px solid var(--color-detalle);
+    font-size: 0.8em;
+    color: var(--color-detalle);
+}
+
+/* ========================================================== */
+/* 3. Estructura Principal (main y sections) */
+/* ========================================================== */
+
+main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+section {
+    background-color: var(--color-bg-secundario);
+    padding: 30px;
+    margin-bottom: 30px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+}
+
+/* ========================================================== */
+/* 4. Estilos del Catálogo de Productos */
+/* ========================================================== */
+
+#productos-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 25px; 
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.producto-card {
+    background-color: #333333; 
+    padding: 20px;
+    border-radius: 6px;
+    width: 300px;
+    text-align: center;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.7);
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-left: 5px solid var(--color-acento-rojo); 
+}
+
+.producto-card:hover {
+    transform: translateY(-5px); 
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.8);
+}
+
+.producto-card h4 {
+    color: var(--color-acento-rojo);
+    margin-bottom: 10px;
+    font-size: 1.1em;
+}
+
+/* ========================================================== */
+/* 5. Estilos de Botones */
+/* ========================================================== */
+
+button {
+    background-color: var(--color-acento-rojo);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    margin-top: 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #A93226; 
+}
+
+#vaciar-carrito-btn {
+    background-color: var(--color-detalle);
+}
+
+#vaciar-carrito-btn:hover {
+    background-color: #404040;
+}
+
+/* ========================================================== */
+/* 6. Estilos del Carrito y Resumen */
+/* ========================================================== */
+
+#lista-carrito {
+    list-style: none; 
+    padding: 0;
+    margin-top: 15px;
+    border: 1px dashed var(--color-detalle); 
+    padding: 15px;
+    min-height: 50px;
+}
+
+#lista-carrito li {
+    padding: 8px 0;
+    border-bottom: 1px dotted var(--color-detalle);
+}
+
+#lista-carrito li:last-child {
+    border-bottom: none;
+}
+
+#resumen-compra {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid var(--color-detalle);
+}
+
+#resumen-compra h3 {
+    color: var(--color-acento-rojo); 
+    font-size: 1.5em;
+    margin: 10px 0;
+}

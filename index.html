@@ -4,26 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎸 Tienda de Instrumentos Usados - Simulación JS</title>
+    <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
 
     <header>
-        <h1>Simulador de Tienda de Instrumentos Usados (JS Inicial)</h1>
+        <h1>Vintage Sound 🎶</h1>
+        
     </header>
 
     <main>
-        <p>
-            **Idea General del Simulador:**
-            <br>
-            Este proyecto inicial de JavaScript simula la interacción básica de un usuario con una **tienda online de instrumentos musicales usados**, como guitarras, bajos y baterías. El objetivo es permitir al usuario **consultar el catálogo** disponible, **agregar productos** a un carrito simulado y **calcular un subtotal** de su compra. La simulación se ejecuta por completo en la **Consola del navegador** y mediante cuadros de diálogo, cumpliendo con los requisitos de la primera entrega.
-        </p>
-        <p>
-            **Instrucciones:** Abre la Consola de JavaScript (F12 o Clic derecho -> Inspeccionar -> Consola) para iniciar la simulación.
-        </p>
+        <section id="catalogo-container">
+            <h2>Catálogo de Instrumentos</h2>
+            <div id="productos-grid">
+                </div>
+        </section>
+
+        <section id="carrito-container">
+            <h2>Tu Carrito</h2>
+            <ul id="lista-carrito">
+                </ul>
+
+            <div id="resumen-compra">
+                <p>Subtotal: $<span id="subtotal">0.00</span></p>
+                <p>IVA (21%): $<span id="iva-monto">0.00</span></p>
+                <h3>Total: $<span id="total-final">0.00</span></h3>
+            </div>
+
+            <button id="finalizar-compra-btn">Finalizar Compra</button>
+            <button id="vaciar-carrito-btn">Vaciar Carrito</button>
+        </section>
     </main>
 
     <footer>
-        <p>&copy; 2024 Entregable 1 - Tienda de Instrumentos</p>
+        <p>&copy; 2025 - Tienda de Instrumentos</p>
     </footer>
 
     <script src="main.js"></script>

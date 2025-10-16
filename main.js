@@ -5,9 +5,8 @@
 // Constantes
 const NOMBRE_TIENDA = "Vintage Sound 🎶";
 const IVA_PORCENTAJE = 0.21; // 21% de IVA
-const SALTO_LINEA = "\n"; // Constante para saltos de línea en Alerts/Prompts
 
-// Array de Objetos (Simulación del catálogo de instrumentos)
+// Array de Objetos 
 const CATALAGO_INSTRUMENTOS = [
   { id: 1, nombre: "Guitarra Eléctrica Fender Squier Strat", precio: 350 },
   { id: 2, nombre: "Bajo Eléctrico Ibanez SR300", precio: 480 },
@@ -17,169 +16,157 @@ const CATALAGO_INSTRUMENTOS = [
 ];
 
 // Variables
-let carrito = []; // Array para almacenar los IDs de los productos seleccionados
+// Carga el carrito desde localStorage. Si no existe, inicializa como array vacío.
+let carrito = JSON.parse(localStorage.getItem('carritoVintageSound')) || []; 
 let subtotalCompra = 0;
-let nombreUsuario = "";
 
 // ==========================================================
-// 2. Funciones (Entrada, Procesamiento y Salida)
+// 2. Funciones de Almacenamiento (localStorage)
 // ==========================================================
 
 /**
- * FUNCIÓN 1: Entrada de datos (Solicitar nombre y saludar)
+ * Guarda el array 'carrito' en localStorage.
  */
-function solicitarNombre() {
-  console.log("--- INICIO DE SIMULACIÓN ---");
-  // Uso de Prompt para entrada de datos
-  nombreUsuario = prompt(
-    `¡Bienvenido a ${NOMBRE_TIENDA}!\nLa tienda de instrumentos usados con el mejor sonido.\n\nPor favor, ingresa tu nombre para comenzar:`
-  );
-
-  if (nombreUsuario && nombreUsuario.trim() !== "") {
-    nombreUsuario = nombreUsuario.trim();
-    // Uso de Alert y concatenación
-    alert(
-      `¡Hola, ${nombreUsuario}!\nEstás a punto de simular una compra.\nRecuerda revisar la Consola (F12) para ver el catálogo.`
-    );
-    console.log(`Usuario: ${nombreUsuario} ha iniciado la simulación.`);
-  } else {
-    nombreUsuario = "Invitado";
-    alert(
-      `¡Hola, ${nombreUsuario}!\nEstás a punto de simular una compra.\nRecuerda revisar la Consola (F12) para ver el catálogo.`
-    );
-    console.log(
-      `Usuario: ${nombreUsuario} (Anónimo) ha iniciado la simulación.`
-    );
-  }
+function guardarCarritoEnLocalStorage() {
+    localStorage.setItem('carritoVintageSound', JSON.stringify(carrito));
 }
 
 /**
- * FUNCIÓN 2: Procesamiento de datos (Mostrar catálogo y agregar al carrito)
- * Utiliza ciclos de iteración y condicionales.
+ * Vacía el carrito, lo actualiza en Storage y en el DOM.
  */
-function simularCompra() {
-  let seguirComprando = true;
+function vaciarCarrito() {
+    carrito = []; 
+    guardarCarritoEnLocalStorage();
+    actualizarCarritoDOM();
+    mostrarResumenCompra();
+    console.log("Carrito vaciado por el usuario.");
+}
 
-  // Condicional inicial para verificar que el catálogo no esté vacío
-  if (CATALAGO_INSTRUMENTOS.length === 0) {
-    alert("Lo sentimos, no hay instrumentos disponibles en este momento.");
-    console.warn("Catálogo vacío. Fin de la simulación.");
-    return;
-  }
+// ==========================================================
+// 3. Funciones de Interacción con el DOM (Catálogo)
+// ==========================================================
 
-  // Muestra el catálogo en la consola
-  console.log("==========================================");
-  console.log(`Catálogo de Instrumentos Usados de ${NOMBRE_TIENDA}`);
-  console.log("==========================================");
+function renderizarCatalogo() {
+    const contenedorProductos = document.getElementById('productos-grid');
+    contenedorProductos.innerHTML = ''; 
+    CATALAGO_INSTRUMENTOS.forEach(producto => {
+        const card = document.createElement('div');
+        card.className = 'producto-card';
 
-  // Ciclo de iteración (for...of) para mostrar productos en consola
-  for (const producto of CATALAGO_INSTRUMENTOS) {
-    console.log(
-      `ID: ${producto.id} | Nombre: ${producto.nombre} | Precio: $${producto.precio}`
-    );
-  }
-  console.log("==========================================");
+        card.innerHTML = `
+            <h4>${producto.nombre}</h4>
+            <p>Precio: $${producto.precio.toFixed(2)}</p>
+            <button class="agregar-btn" data-id="${producto.id}">🛒 Agregar</button>
+        `;
 
-  // Ciclo de iteración (while) para la interacción de compra
-  while (seguirComprando) {
-    let mensajePrompt = `CATÁLOGO DISPONIBLE (Ingresa el ID del producto):\n${SALTO_LINEA}`;
+        contenedorProductos.appendChild(card);
+    });
 
-    // Construcción dinámica del mensaje del Prompt
-    for (const producto of CATALAGO_INSTRUMENTOS) {
-      mensajePrompt += `[ID ${producto.id}] ${producto.nombre} - $${producto.precio}${SALTO_LINEA}`;
-    }
-    mensajePrompt += `${SALTO_LINEA}Ingresa 'FIN' para terminar la compra.`;
+    // Asignar Evento 'click' a cada botón "Agregar al Carrito"
+    document.querySelectorAll('.agregar-btn').forEach(button => {
+        button.addEventListener('click', agregarAlCarrito);
+    });
+}
 
-    let inputUsuario = prompt(mensajePrompt);
+/**
+ * Event Handler para el botón "Agregar al Carrito".
+ * @param {Event} e - El evento click.
+ */
+function agregarAlCarrito(e) {
+    // 1. Entrada: Obtenemos el ID del producto desde el atributo data-id
+    const idProducto = parseInt(e.target.getAttribute('data-id'));
+    const productoAgregado = CATALAGO_INSTRUMENTOS.find(p => p.id === idProducto);
 
-    // Condicional para verificar si el usuario quiere terminar
-    if (inputUsuario === null || inputUsuario.toUpperCase() === "FIN") {
-      seguirComprando = false;
-      break;
-    }
-
-    // Conversión a número
-    let idSeleccionado = parseInt(inputUsuario);
-
-    // Condicional para validar la entrada (número válido y existente)
-    const productoEncontrado = CATALAGO_INSTRUMENTOS.find(
-      (p) => p.id === idSeleccionado
-    );
-
-    if (productoEncontrado) {
-      carrito.push(idSeleccionado); // Almacena el ID
-      subtotalCompra += productoEncontrado.precio; // Suma al subtotal
-
-      // Uso de Alert con concatenación
-      alert(
-        `✅ ¡Producto agregado! ${productoEncontrado.nombre} ($${productoEncontrado.precio}).${SALTO_LINEA}Subtotal actual: $${subtotalCompra}`
-      );
-      console.log(
-        `Agregado al carrito: ID ${idSeleccionado} (${productoEncontrado.nombre}).`
-      );
+    if (productoAgregado) {
+        // 2. Procesamiento: Agregamos el producto al array del carrito
+        carrito.push(productoAgregado); 
+        
+        // 3. Almacenamiento y Salida: 
+        guardarCarritoEnLocalStorage(); // Persistencia
+        actualizarCarritoDOM(); // Actualiza la lista de ítems
+        mostrarResumenCompra(); // Actualiza los totales
+        
+        console.log(`Agregado al carrito: ${productoAgregado.nombre}.`);
     } else {
-      // Condicional para ID inválido
-      alert(
-        "❌ ID de producto no válido. Por favor, ingresa un número de ID de la lista o 'FIN'."
-      );
-      console.warn(`Intento de ID inválido: ${inputUsuario}`);
+        console.error(`Error: No se encontró el producto con ID ${idProducto}`);
     }
-  }
+}
+
+// ==========================================================
+// 4. Funciones de Interacción con el DOM (Carrito y Resumen)
+// ==========================================================
+
+
+function actualizarCarritoDOM() {
+    const listaCarrito = document.getElementById('lista-carrito');
+    listaCarrito.innerHTML = ''; // Limpiar lista anterior
+
+    if (carrito.length === 0) {
+        listaCarrito.innerHTML = '<li>El carrito está vacío. ¡Agrega un instrumento!</li>';
+        return;
+    }
+
+    // Usamos el array 'carrito' (cargado desde localStorage) para dibujar cada ítem
+    carrito.forEach(item => {
+        const li = document.createElement('li');
+        li.textContent = `${item.nombre} - $${item.precio.toFixed(2)}`;
+        listaCarrito.appendChild(li);
+    });
 }
 
 /**
- * FUNCIÓN 3: Salida de datos (Mostrar resumen y calcular total)
- * Calcula y muestra el resumen final, usa condicional y Confirm.
+ * Calcula y muestra el subtotal, IVA y Total en la interfaz web.
  */
-function mostrarResumen() {
-  console.log("--- RESUMEN DE LA COMPRA ---");
+function mostrarResumenCompra() {
+    // 1. Procesamiento: Recalcular el subtotal
+    subtotalCompra = carrito.reduce((acc, item) => acc + item.precio, 0);
 
-  // Condicional para verificar si se agregó algo al carrito
-  if (carrito.length === 0) {
-    // Uso de Alert
-    alert(`Gracias por tu visita, ${nombreUsuario}. ¡Esperamos verte pronto!`);
-    console.log("Carrito vacío. Simulación terminada.");
-    return;
-  }
+    // 2. Cálculo del Total con IVA
+    const ivaMonto = subtotalCompra * IVA_PORCENTAJE;
+    const totalFinal = subtotalCompra + ivaMonto;
 
-  // Cálculo del Total con IVA
-  const ivaMonto = subtotalCompra * IVA_PORCENTAJE;
-  const totalFinal = subtotalCompra + ivaMonto;
+    // 3. Salida: Actualizar los elementos del DOM
+    document.getElementById('subtotal').textContent = subtotalCompra.toFixed(2);
+    document.getElementById('iva-monto').textContent = ivaMonto.toFixed(2);
+    document.getElementById('total-final').textContent = totalFinal.toFixed(2);
+}
 
-  // Uso de Confirm
-  const confirmaFin = confirm(
-    `👋 ${nombreUsuario}, ¿deseas finalizar tu compra de ${carrito.length} artículos?`
-  );
+/**
+ * Maneja el proceso final de la compra.
+ */
+function finalizarCompra() {
+    if (carrito.length === 0) {
+        // En lugar de alert, podrías usar una modal o mensaje en el DOM.
+        alert("Tu carrito está vacío. Agrega productos para finalizar."); 
+        return;
+    }
 
-  if (confirmaFin) {
-    // Formato para el resumen final (uso de Alert, concatenación y saltos de línea)
-    let resumen = `🎉 ¡Gracias por tu compra en ${NOMBRE_TIENDA}, ${nombreUsuario}! 🎉${SALTO_LINEA}${SALTO_LINEA}`;
-    resumen += `📝 Detalle de tu Pedido: ${carrito.length} artículos.${SALTO_LINEA}`;
-    resumen += `--------------------------------------${SALTO_LINEA}`;
-    resumen += `SUBTOTAL: $${subtotalCompra.toFixed(2)}${SALTO_LINEA}`;
-    resumen += `IVA (${IVA_PORCENTAJE * 100}%): $${ivaMonto.toFixed(
-      2
-    )}${SALTO_LINEA}`;
-    resumen += `--------------------------------------${SALTO_LINEA}`;
-    resumen += `TOTAL FINAL: $${totalFinal.toFixed(
-      2
-    )}${SALTO_LINEA}${SALTO_LINEA}`;
-    resumen += `*Simulación de pago realizada con éxito.*`;
-
-    alert(resumen);
-    console.log(`Compra finalizada. Total: $${totalFinal.toFixed(2)}`);
-  } else {
-    alert("Compra cancelada. ¡Vuelve pronto!");
-    console.log("Compra cancelada por el usuario.");
-  }
-
-  console.log("--- FIN DE SIMULACIÓN ---");
+    // Cálculo del Total con IVA
+    const ivaMonto = subtotalCompra * IVA_PORCENTAJE;
+    const totalFinal = subtotalCompra + ivaMonto;
+    
+    // Simulación de finalización (usamos un alert simple solo para la confirmación final, 
+    // pero idealmente sería una página de checkout o modal).
+    alert(`🎉 ¡Gracias por tu compra en ${NOMBRE_TIENDA}! 🎉\n\nTotal pagado (simulado): $${totalFinal.toFixed(2)}`);
+    
+    // Vaciar carrito y resetear la vista/storage
+    vaciarCarrito(); 
+    console.log("Compra finalizada con éxito.");
 }
 
 // ==========================================================
-// 4. Invocación de las Funciones (Llamadas al algoritmo)
+// 5. Inicialización de la Aplicación
 // ==========================================================
 
-solicitarNombre(); // 1. Entrada de datos
-simularCompra(); // 2. Procesamiento de datos
-mostrarResumen(); // 3. Salida de datos
+// 1. Renderiza el catálogo al cargar la página
+renderizarCatalogo(); 
+
+// 2. Carga y muestra los datos del carrito guardados en localStorage
+actualizarCarritoDOM();
+mostrarResumenCompra();
+
+// 3. Asigna Event Listeners a los botones principales del resumen
+document.getElementById('finalizar-compra-btn').addEventListener('click', finalizarCompra);
+document.getElementById('vaciar-carrito-btn').addEventListener('click', vaciarCarrito);
+
+console.log(`---SIMULADOR ${NOMBRE_TIENDA} INICIADO ---`);
