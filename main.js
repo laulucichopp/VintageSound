@@ -1,172 +1,273 @@
 // ==========================================================
-// 1. Declaración de Variables, Constantes y Arrays
+// 1. Constantes y Variables Globales
 // ==========================================================
 
-// Constantes
 const NOMBRE_TIENDA = "Vintage Sound 🎶";
-const IVA_PORCENTAJE = 0.21; // 21% de IVA
+const IVA_PORCENTAJE = 0.21;
 
-// Array de Objetos 
-const CATALAGO_INSTRUMENTOS = [
-  { id: 1, nombre: "Guitarra Eléctrica Fender Squier Strat", precio: 350 },
-  { id: 2, nombre: "Bajo Eléctrico Ibanez SR300", precio: 480 },
-  { id: 3, nombre: "Batería Acústica Pearl Roadshow", precio: 720 },
-  { id: 4, nombre: "Guitarra Clásica Yamaha C40", precio: 150 },
-  { id: 5, nombre: "Pedal Distorsión Boss DS-1", precio: 85 },
-];
-
-// Variables
-// Carga el carrito desde localStorage. Si no existe, inicializa como array vacío.
-let carrito = JSON.parse(localStorage.getItem('carritoVintageSound')) || []; 
+// Variables globales
+let CATALAGO_INSTRUMENTOS = []; // Se llenará asíncronamente
+let carrito = JSON.parse(localStorage.getItem("carritoVintageSound")) || [];
 let subtotalCompra = 0;
 
+// Referencias del DOM
+const contenedorProductos = document.getElementById("productos-grid");
+const listaCarrito = document.getElementById("lista-carrito");
+const formularioCheckout = document.getElementById("checkout-form");
+const btnVaciar = document.getElementById("vaciar-carrito-btn");
+
 // ==========================================================
-// 2. Funciones de Almacenamiento (localStorage)
+// 2. Funciones Asíncronas (Carga de Datos Remotos)
 // ==========================================================
 
 /**
- * Guarda el array 'carrito' en localStorage.
+ * Carga el catálogo de instrumentos desde el archivo data.json (simulación remota).
+ */
+async function cargarCatalogo() {
+  try {
+    const response = await fetch("./data.json");
+    if (!response.ok) {
+      throw new Error(`Error al cargar los datos: ${response.statusText}`);
+    }
+    CATALAGO_INSTRUMENTOS = await response.json();
+
+    // Una vez cargado, renderiza el catálogo y oculta el mensaje de carga
+    document.getElementById("cargando-productos").style.display = "none";
+    renderizarCatalogo();
+  } catch (error) {
+    // Usa SweetAlert2 para mostrar error
+    Swal.fire({
+      icon: "error",
+      title: "Error de Conexión",
+      text: "No se pudo cargar el catálogo de instrumentos. Intenta más tarde.",
+    });
+  }
+}
+
+// ==========================================================
+// 3. Funciones de Lógica de Negocio y Almacenamiento
+// ==========================================================
+
+/**
+ * Persiste el array 'carrito' en localStorage.
  */
 function guardarCarritoEnLocalStorage() {
-    localStorage.setItem('carritoVintageSound', JSON.stringify(carrito));
+  localStorage.setItem("carritoVintageSound", JSON.stringify(carrito));
 }
 
 /**
- * Vacía el carrito, lo actualiza en Storage y en el DOM.
+ * Vacía el carrito global y actualiza la interfaz.
  */
 function vaciarCarrito() {
-    carrito = []; 
-    guardarCarritoEnLocalStorage();
-    actualizarCarritoDOM();
-    mostrarResumenCompra();
-    console.log("Carrito vaciado por el usuario.");
+  if (carrito.length === 0) {
+    Swal.fire({
+      icon: "info",
+      title: "Carrito Vacío",
+      text: "No hay productos que vaciar.",
+    });
+    return;
+  }
+
+  // Usa SweetAlert2 para reemplazar el Confirm
+  Swal.fire({
+    title: "¿Estás seguro?",
+    text: "¡Tu carrito se vaciará por completo!",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#C0392B",
+    cancelButtonColor: "#505050",
+    confirmButtonText: "Sí, ¡Vaciar!",
+    cancelButtonText: "No, Cancelar",
+  }).then((result) => {
+    if (result.isConfirmed) {
+      carrito = [];
+      guardarCarritoEnLocalStorage();
+      actualizarInterfaz();
+      Swal.fire({
+        title: "Carrito Vaciado",
+        text: "Se han eliminado todos los productos.",
+        icon: "success",
+        showConfirmButton: false,
+        timer: 1500,
+      });
+    }
+  });
 }
 
 // ==========================================================
-// 3. Funciones de Interacción con el DOM (Catálogo)
+// 4. Funciones de Interacción y Renderizado del DOM
 // ==========================================================
 
+/**
+ * Genera el HTML del catálogo de forma dinámica.
+ */
 function renderizarCatalogo() {
-    const contenedorProductos = document.getElementById('productos-grid');
-    contenedorProductos.innerHTML = ''; 
-    CATALAGO_INSTRUMENTOS.forEach(producto => {
-        const card = document.createElement('div');
-        card.className = 'producto-card';
+  contenedorProductos.innerHTML = "";
 
-        card.innerHTML = `
-            <h4>${producto.nombre}</h4>
-            <p>Precio: $${producto.precio.toFixed(2)}</p>
-            <button class="agregar-btn" data-id="${producto.id}">🛒 Agregar</button>
-        `;
+  CATALAGO_INSTRUMENTOS.forEach((producto) => {
+    const card = document.createElement("div");
+    card.className = "producto-card";
 
-        contenedorProductos.appendChild(card);
-    });
+card.innerHTML = `
+    <img src="img/${producto.imagen}" alt="${
+  producto.nombre
+}" class="producto-img">
 
-    // Asignar Evento 'click' a cada botón "Agregar al Carrito"
-    document.querySelectorAll('.agregar-btn').forEach(button => {
-        button.addEventListener('click', agregarAlCarrito);
-    });
+    <h4>${producto.nombre}</h4>
+    <p class="categoria">Categoría: ${producto.categoria}</p>
+    <p>Precio: $<span class="precio">${producto.precio.toFixed(2)}</span></p>
+
+    <button class="agregar-btn" data-id="${producto.id}">🛒 Agregar</button>
+`;
+
+
+    contenedorProductos.appendChild(card);
+  });
 }
 
 /**
- * Event Handler para el botón "Agregar al Carrito".
- * @param {Event} e - El evento click.
+ * Dibuja la lista actual de productos en el carrito.
  */
-function agregarAlCarrito(e) {
-    // 1. Entrada: Obtenemos el ID del producto desde el atributo data-id
-    const idProducto = parseInt(e.target.getAttribute('data-id'));
-    const productoAgregado = CATALAGO_INSTRUMENTOS.find(p => p.id === idProducto);
-
-    if (productoAgregado) {
-        // 2. Procesamiento: Agregamos el producto al array del carrito
-        carrito.push(productoAgregado); 
-        
-        // 3. Almacenamiento y Salida: 
-        guardarCarritoEnLocalStorage(); // Persistencia
-        actualizarCarritoDOM(); // Actualiza la lista de ítems
-        mostrarResumenCompra(); // Actualiza los totales
-        
-        console.log(`Agregado al carrito: ${productoAgregado.nombre}.`);
-    } else {
-        console.error(`Error: No se encontró el producto con ID ${idProducto}`);
-    }
-}
-
-// ==========================================================
-// 4. Funciones de Interacción con el DOM (Carrito y Resumen)
-// ==========================================================
-
-
 function actualizarCarritoDOM() {
-    const listaCarrito = document.getElementById('lista-carrito');
-    listaCarrito.innerHTML = ''; // Limpiar lista anterior
+  listaCarrito.innerHTML = "";
 
-    if (carrito.length === 0) {
-        listaCarrito.innerHTML = '<li>El carrito está vacío. ¡Agrega un instrumento!</li>';
-        return;
-    }
+  if (carrito.length === 0) {
+    listaCarrito.innerHTML =
+      '<li class="carrito-vacio">El carrito está vacío. ¡Agrega un instrumento!</li>';
+    return;
+  }
 
-    // Usamos el array 'carrito' (cargado desde localStorage) para dibujar cada ítem
-    carrito.forEach(item => {
-        const li = document.createElement('li');
-        li.textContent = `${item.nombre} - $${item.precio.toFixed(2)}`;
-        listaCarrito.appendChild(li);
-    });
+  // Se usa un objeto para contar la cantidad de cada producto
+  const carritoContador = carrito.reduce((acc, item) => {
+    acc[item.id] = acc[item.id] ? acc[item.id] + 1 : 1;
+    return acc;
+  }, {});
+
+  // Se dibujan los ítems únicos con su cantidad
+  Object.keys(carritoContador).forEach((id) => {
+    const producto = CATALAGO_INSTRUMENTOS.find((p) => p.id === parseInt(id));
+    const cantidad = carritoContador[id];
+
+    const li = document.createElement("li");
+    li.innerHTML = `
+            ${cantidad}x - ${producto.nombre} 
+            <strong>($${(producto.precio * cantidad).toFixed(2)})</strong>
+        `;
+    listaCarrito.appendChild(li);
+  });
 }
 
 /**
  * Calcula y muestra el subtotal, IVA y Total en la interfaz web.
  */
 function mostrarResumenCompra() {
-    // 1. Procesamiento: Recalcular el subtotal
-    subtotalCompra = carrito.reduce((acc, item) => acc + item.precio, 0);
+  // 1. Procesamiento: Recalcular el subtotal
+  subtotalCompra = carrito.reduce((acc, item) => acc + item.precio, 0);
 
-    // 2. Cálculo del Total con IVA
-    const ivaMonto = subtotalCompra * IVA_PORCENTAJE;
-    const totalFinal = subtotalCompra + ivaMonto;
+  // 2. Cálculo del Total con IVA
+  const ivaMonto = subtotalCompra * IVA_PORCENTAJE;
+  const totalFinal = subtotalCompra + ivaMonto;
 
-    // 3. Salida: Actualizar los elementos del DOM
-    document.getElementById('subtotal').textContent = subtotalCompra.toFixed(2);
-    document.getElementById('iva-monto').textContent = ivaMonto.toFixed(2);
-    document.getElementById('total-final').textContent = totalFinal.toFixed(2);
+  // 3. Salida: Actualizar los elementos del DOM
+  document.getElementById("subtotal").textContent = subtotalCompra.toFixed(2);
+  document.getElementById("iva-monto").textContent = ivaMonto.toFixed(2);
+  document.getElementById("total-final").textContent = totalFinal.toFixed(2);
 }
 
 /**
- * Maneja el proceso final de la compra.
+ * Función central para actualizar el estado visual de la app.
  */
-function finalizarCompra() {
-    if (carrito.length === 0) {
-        // En lugar de alert, podrías usar una modal o mensaje en el DOM.
-        alert("Tu carrito está vacío. Agrega productos para finalizar."); 
-        return;
-    }
-
-    // Cálculo del Total con IVA
-    const ivaMonto = subtotalCompra * IVA_PORCENTAJE;
-    const totalFinal = subtotalCompra + ivaMonto;
-    
-    // Simulación de finalización (usamos un alert simple solo para la confirmación final, 
-    // pero idealmente sería una página de checkout o modal).
-    alert(`🎉 ¡Gracias por tu compra en ${NOMBRE_TIENDA}! 🎉\n\nTotal pagado (simulado): $${totalFinal.toFixed(2)}`);
-    
-    // Vaciar carrito y resetear la vista/storage
-    vaciarCarrito(); 
-    console.log("Compra finalizada con éxito.");
+function actualizarInterfaz() {
+  actualizarCarritoDOM();
+  mostrarResumenCompra();
 }
 
 // ==========================================================
-// 5. Inicialización de la Aplicación
+// 5. Event Handlers (Manejadores de Eventos)
 // ==========================================================
 
-// 1. Renderiza el catálogo al cargar la página
-renderizarCatalogo(); 
+/**
+ * Agrega un producto al carrito al hacer click en el botón.
+ */
+function agregarAlCarrito(e) {
+  if (!e.target.classList.contains("agregar-btn")) return;
 
-// 2. Carga y muestra los datos del carrito guardados en localStorage
-actualizarCarritoDOM();
-mostrarResumenCompra();
+  const idProducto = parseInt(e.target.getAttribute("data-id"));
+  const productoAgregado = CATALAGO_INSTRUMENTOS.find(
+    (p) => p.id === idProducto
+  );
 
-// 3. Asigna Event Listeners a los botones principales del resumen
-document.getElementById('finalizar-compra-btn').addEventListener('click', finalizarCompra);
-document.getElementById('vaciar-carrito-btn').addEventListener('click', vaciarCarrito);
+  if (productoAgregado) {
+    carrito.push(productoAgregado);
+    guardarCarritoEnLocalStorage();
+    actualizarInterfaz();
 
-console.log(`---SIMULADOR ${NOMBRE_TIENDA} INICIADO ---`);
+    // Notificación de éxito con SweetAlert2
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon: "success",
+      title: `¡${productoAgregado.nombre} agregado!`,
+      showConfirmButton: false,
+      timer: 1200,
+    });
+  }
+}
+
+/**
+ * Maneja el proceso final de la compra al enviar el formulario.
+ */
+function finalizarCompra(e) {
+  e.preventDefault(); // Evita el envío tradicional del formulario
+
+  if (carrito.length === 0) {
+    Swal.fire({
+      icon: "warning",
+      title: "Carrito Vacío",
+      text: "Debes agregar productos antes de finalizar la compra.",
+    });
+    return;
+  }
+
+  const nombre = document.getElementById("nombre-cliente").value;
+  const totalFinal = (subtotalCompra * (1 + IVA_PORCENTAJE)).toFixed(2);
+
+  // Simulación de Proceso de Pago
+  Swal.fire({
+    title: "Procesando Pago...",
+    html: `Total a pagar: <strong>$${totalFinal}</strong>`,
+    timer: 2000,
+    timerProgressBar: true,
+    didOpen: () => {
+      Swal.showLoading();
+    },
+  }).then((result) => {
+    if (result.dismiss === Swal.DismissReason.timer || result.isConfirmed) {
+      // Éxito:
+      vaciarCarrito(); // Vaciar el carrito después del pago
+      Swal.fire({
+        title: `¡Compra Exitosa, ${nombre}!`,
+        html: `Tu pedido por $${totalFinal} ha sido confirmado. <br> ¡Gracias por elegir ${NOMBRE_TIENDA}!`,
+        icon: "success",
+        confirmButtonColor: "#C0392B",
+      });
+    }
+  });
+}
+
+// ==========================================================
+// 6. Inicialización de la Aplicación
+// ==========================================================
+
+document.addEventListener("DOMContentLoaded", () => {
+  // 1. Carga Asíncrona de datos
+  cargarCatalogo();
+
+  // 2. Carga Inicial de la Interfaz (para mostrar carrito persistido)
+  actualizarInterfaz();
+
+  // 3. Asigna Event Listeners Globales
+  contenedorProductos.addEventListener("click", agregarAlCarrito);
+  btnVaciar.addEventListener("click", vaciarCarrito);
+  formularioCheckout.addEventListener("submit", finalizarCompra);
+});

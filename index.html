@@ -3,41 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎸 Tienda de Instrumentos Usados - Simulación JS</title>
+    <title>🎸 Proyecto Final: Vintage Sound</title>
     <link rel="stylesheet" href="style.css"> 
+    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
 
     <header>
         <h1>Vintage Sound 🎶</h1>
-        
+        <p>Tu tienda online de instrumentos usados</p>
     </header>
 
     <main>
+        
         <section id="catalogo-container">
-            <h2>Catálogo de Instrumentos</h2>
+            <h2>Catálogo de Instrumentos Disponibles</h2>
+            <p id="cargando-productos">Cargando instrumentos...</p>
             <div id="productos-grid">
                 </div>
         </section>
 
+        <hr>
+
         <section id="carrito-container">
-            <h2>Tu Carrito</h2>
+            <h2>🛒 Tu Carrito</h2>
+            
             <ul id="lista-carrito">
                 </ul>
 
             <div id="resumen-compra">
+                <h3>Resumen de la Compra</h3>
                 <p>Subtotal: $<span id="subtotal">0.00</span></p>
                 <p>IVA (21%): $<span id="iva-monto">0.00</span></p>
-                <h3>Total: $<span id="total-final">0.00</span></h3>
+                <hr>
+                <h3>TOTAL FINAL: $<span id="total-final">0.00</span></h3>
             </div>
+            
+            <br>
+            
+            <form id="checkout-form">
+                <h4>Datos de Envío y Contacto</h4>
+                <input type="text" id="nombre-cliente" placeholder="Nombre Completo">
+                <input type="email" id="email-cliente" placeholder="Email">
+                <input type="text" id="direccion-cliente" placeholder="Dirección de Envío">
+                
+                <button type="submit" id="finalizar-compra-btn">✅ Pagar y Finalizar Compra</button>
+            </form>
 
-            <button id="finalizar-compra-btn">Finalizar Compra</button>
-            <button id="vaciar-carrito-btn">Vaciar Carrito</button>
+            <button id="vaciar-carrito-btn" style="margin-left: 10px;">🗑️ Vaciar Carrito</button>
         </section>
+        
     </main>
 
     <footer>
-        <p>&copy; 2025 - Tienda de Instrumentos</p>
+        <p>&copy; 2025 Proyecto Final - Vintage Sound</p>
     </footer>
 
     <script src="main.js"></script>

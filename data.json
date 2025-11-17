@@ -1,0 +1,44 @@
+[
+  {
+    "id": 1,
+    "nombre": "Guitarra Eléctrica Fender Squier Strat",
+    "precio": 350.0,
+    "categoria": "Cuerda",
+    "imagen": "fender_strat.jpg"
+  },
+  {
+    "id": 2,
+    "nombre": "Bajo Eléctrico Ibanez SR300",
+    "precio": 480.0,
+    "categoria": "Cuerda",
+    "imagen": "ibanez_bajo.jpg"
+  },
+  {
+    "id": 3,
+    "nombre": "Batería Acústica Pearl Roadshow",
+    "precio": 720.0,
+    "categoria": "Percusión",
+    "imagen": "pearl_bateria.jpg"
+  },
+  {
+    "id": 4,
+    "nombre": "Guitarra Clásica Yamaha C40",
+    "precio": 150.0,
+    "categoria": "Cuerda",
+    "imagen": "yamaha_clasica.jpg"
+  },
+  {
+    "id": 5,
+    "nombre": "Pedal Distorsión Boss DS-1",
+    "precio": 85.0,
+    "categoria": "Accesorios",
+    "imagen": "boss_pedal.jpg"
+  },
+  {
+    "id": 6,
+    "nombre": "Teclado Sintetizador Korg Volca",
+    "precio": 220.0,
+    "categoria": "Electrónico",
+    "imagen": "korg_volca.jpg"
+  }
+]
